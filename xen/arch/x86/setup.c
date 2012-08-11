@@ -80,7 +80,7 @@ boolean_param("acpi_skip_timer_override", acpi_skip_timer_override);
 
 /* **** Linux config option: propagated to domain0. */
 /* noapic: Disable IOAPIC setup. */
-boolean_param("noapic", skip_ioapic_setup);
+boolean_param("noapic", skip_ioapic_setup);  // 안될나요?
 
 /* **** Linux config option: propagated to domain0. */
 /* xen_cpuidle: xen control cstate. */
