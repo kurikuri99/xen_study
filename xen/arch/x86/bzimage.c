@@ -212,6 +212,7 @@ int __init bzimage_headroom(char *image_start, unsigned long image_length)
     img = image_start + (hdr->setup_sects+1) * 512;
     img += hdr->payload_offset;
 
+	//갯수 return
     headroom = output_length(img, hdr->payload_length);
     if (gzip_check(img, hdr->payload_length)) {
         headroom += headroom >> 12; /* Add 8 bytes for every 32K input block */

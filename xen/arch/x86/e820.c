@@ -566,21 +566,29 @@ int __init e820_change_range_type(
     struct e820map *e820, uint64_t s, uint64_t e,
     uint32_t orig_type, uint32_t new_type)
 {
+	//s = kdump start address , e = kdump end address , orig_type = 1(E820_RAM) , new_type = 2(E820_RESERVED)
+	
     uint64_t rs = 0, re = 0;
     int i;
 
+	//e820은 바이오스에서 넘어온 메모리크기중 사용가능한 메모리크기 
     for ( i = 0; i < e820->nr_map; i++ )
     {
         /* Have we found the e820 region that includes the specified range? */
         rs = e820->map[i].addr;
         re = rs + e820->map[i].size;
-        if ( (s >= rs) && (e <= re) )
+        if ( (s >= rs) && (e <= re) ) //s , e 가 e820 address 사이에 있는 영역이면 break
             break;
     }
 
     if ( (i == e820->nr_map) || (e820->map[i].type != orig_type) )
         return 0;
 
+/*
+ * e820 memory addr 영역에  s , e 가 포함되어 있다면
+ * E820_RESERVED 로 변경하여 사용불가능 영역으로 설정.
+ *
+ */
     if ( (s == rs) && (e == re) )
     {
         e820->map[i].type = new_type;
@@ -627,6 +635,11 @@ int __init e820_change_range_type(
     }
 
     /* Finally, look for any opportunities to merge adjacent e820 entries. */
+
+	/*
+	 * 위에서 entry 추가 와 메모리 영역 조정한 부분에 대하여
+	 * 예외 처리
+	 */
     for ( i = 0; i < (e820->nr_map - 1); i++ )
     {
         if ( (e820->map[i].type != e820->map[i+1].type) ||

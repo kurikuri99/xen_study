@@ -1381,8 +1381,9 @@ asmlinkage void __init do_early_page_fault(struct cpu_user_regs *regs)
 {
     static int stuck;
     static unsigned long prev_eip, prev_cr2;
-    unsigned long cr2 = read_cr2();
-
+   //page fault가 발생하면 cr2레지스터에 저장된다.
+	unsigned long cr2 = read_cr2();
+		
     BUG_ON(smp_processor_id() != 0);
 
     if ( (regs->eip != prev_eip) || (cr2 != prev_cr2) )

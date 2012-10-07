@@ -126,13 +126,16 @@ extern unsigned int video_mode, video_flags;
 #define GB(_gb) (_gb ## UL << 30)
 #else
 #define PML4_ENTRY_BYTES (1 << PML4_ENTRY_BITS)
+//PML4_ADDR(_slot) = 0xffff830000000000
 #define PML4_ADDR(_slot)                             \
     (((_slot >> 8) * 0xffff000000000000) | (_slot << PML4_ENTRY_BITS))
+
 #define GB(_gb) (_gb << 30)
 #endif
 
 /*
  * Memory layout:
+ * 						 
  *  0x0000000000000000 - 0x00007fffffffffff [128TB, 2^47 bytes, PML4:0-255]
  *    Guest-defined use (see below for compatibility mode guests).
  *  0x0000800000000000 - 0xffff7fffffffffff [16EB]
@@ -181,6 +184,9 @@ extern unsigned int video_mode, video_flags;
  *    Reserved for future use.
  */
 
+/* PML -> http://onestep.tistory.com/80 xen 64bit 초기 메모리 구조
+ *
+ */
 
 #define ROOT_PAGETABLE_FIRST_XEN_SLOT 256
 #define ROOT_PAGETABLE_LAST_XEN_SLOT  271
@@ -236,6 +242,8 @@ extern unsigned int video_mode, video_flags;
                                  sizeof(struct page_info))
 #define FRAMETABLE_VIRT_START   (FRAMETABLE_VIRT_END - FRAMETABLE_SIZE)
 /* Slot 262-271: A direct 1:1 mapping of all of physical memory. */
+
+//DIRECTMAP_VIRT_START = 0xffff830000000000
 #define DIRECTMAP_VIRT_START    (PML4_ADDR(262))
 #define DIRECTMAP_SIZE          (PML4_ENTRY_BYTES*10)
 #define DIRECTMAP_VIRT_END      (DIRECTMAP_VIRT_START + DIRECTMAP_SIZE)

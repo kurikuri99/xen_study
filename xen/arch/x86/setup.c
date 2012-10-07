@@ -80,7 +80,7 @@ boolean_param("acpi_skip_timer_override", acpi_skip_timer_override);
 
 /* **** Linux config option: propagated to domain0. */
 /* noapic: Disable IOAPIC setup. */
-boolean_param("noapic", skip_ioapic_setup);  // 안될나요?
+boolean_param("noapic", skip_ioapic_setup);
 
 /* **** Linux config option: propagated to domain0. */
 /* xen_cpuidle: xen control cstate. */
@@ -261,12 +261,17 @@ static void __init normalise_cpu_order(void)
     }
 }
 
-#define BOOTSTRAP_MAP_BASE  (16UL << 20)
-#define BOOTSTRAP_MAP_LIMIT (1UL << L3_PAGETABLE_SHIFT)
+#define BOOTSTRAP_MAP_BASE  (16UL << 20) // 0x1000000 (16M)
+#define BOOTSTRAP_MAP_LIMIT (1UL << L3_PAGETABLE_SHIFT) // 0x40000000(1G)
 
 /*
  * Ensure a given physical memory range is present in the bootstrap mappings.
  * Use superpage mappings to ensure that pagetable memory needn't be allocated.
+ */
+
+/*
+ * superpage(huge page) 
+ *
  */
 static void *__init bootstrap_map(const module_t *mod)
 {
@@ -484,8 +489,10 @@ static void __init kexec_reserve_area(struct e820map *e820)
     unsigned long kdump_size  = kexec_crash_area.size;
     static int is_reserved = 0;
 
+	//PAGE_SIZE = 0001 0000 0000 0000
+	//PAGE_MASK = FFFF 0000 0000 0000
     kdump_size = (kdump_size + PAGE_SIZE - 1) & PAGE_MASK;
-
+	
     if ( (kdump_start == 0) || (kdump_size == 0) || is_reserved )
         return;
 
@@ -559,7 +566,8 @@ void __init __start_xen(unsigned long mbi_p)
     };
 
     percpu_init_areas();
-
+	
+	//TRAP_page_fault(14) idt 등록
     set_intr_gate(TRAP_page_fault, &early_page_fault);
 
     loader = (mbi->flags & MBI_LOADERNAME)
@@ -745,6 +753,7 @@ void __init __start_xen(unsigned long mbi_p)
     set_kexec_crash_area_size((u64)nr_pages << PAGE_SHIFT);
     kexec_reserve_area(&boot_e820);
 
+
     initial_images = mod;
     nr_initial_images = mbi->mods_count;
 
@@ -761,6 +770,13 @@ void __init __start_xen(unsigned long mbi_p)
      * we can relocate the dom0 kernel and other multiboot modules. Also, on
      * x86/64, we relocate Xen to higher memory.
      */
+/*
+ * grub.conf에 등록되어 있는 xen 커널을 로드해오는 부분으로 보임
+ * Dom0로 실행되는 커널 이미지외에 initrd와 기타 파일들이 모두 모듈로 저장된다.
+ * 그래서 모듈이 여러개가 된다.
+ * 이렇게 module로 포함된 kernel image와 initrd는 부트로더에서 이미 메모리에 로딩해놓았다.
+ */
+
     for ( i = 0; i < mbi->mods_count; i++ )
     {
         if ( mod[i].mod_start & (PAGE_SIZE - 1) )
@@ -771,6 +787,8 @@ void __init __start_xen(unsigned long mbi_p)
     }
 
     modules_headroom = bzimage_headroom(bootstrap_map(mod), mod->mod_end);
+
+
     bootstrap_map(NULL);
 
     for ( i = boot_e820.nr_map-1; i >= 0; i-- )
