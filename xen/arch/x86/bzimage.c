@@ -188,7 +188,7 @@ static __init int bzimage_check(struct setup_header *hdr, unsigned long len)
     if ( len < sizeof(struct setup_header) ) /* bzImage length 가 header size 보다 작다면 return */
         return 0;
 
-    if ( memcmp(&hdr->header, HDR_MAGIC, HDR_MAGIC_SZ) != 0 ) /* bzImage Header MAGIC (HdrS) 가 다르면 return */
+    if ( memcmp(&hdr->header, HDR_MAGIC, HDR_MAGIC_SZ) != 0 ) /* bzImage Header MAGIC ('HdrS') 이 다르면 return */
         return 0;
 
     if ( hdr->version < VERSION(2,8) ) {     /* bzImage Header version 이 2.8 보다 작으면 Error */
