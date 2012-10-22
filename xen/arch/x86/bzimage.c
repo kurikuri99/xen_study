@@ -185,13 +185,13 @@ struct setup_header {
 
 static __init int bzimage_check(struct setup_header *hdr, unsigned long len)
 {
-    if ( len < sizeof(struct setup_header) )
+    if ( len < sizeof(struct setup_header) ) /* bzImage length 가 header size 보다 작다면 return */
         return 0;
 
-    if ( memcmp(&hdr->header, HDR_MAGIC, HDR_MAGIC_SZ) != 0 )
+    if ( memcmp(&hdr->header, HDR_MAGIC, HDR_MAGIC_SZ) != 0 ) /* bzImage Header MAGIC (HdrS) 가 다르면 return */
         return 0;
 
-    if ( hdr->version < VERSION(2,8) ) {
+    if ( hdr->version < VERSION(2,8) ) {     /* bzImage Header version 이 2.8 보다 작으면 Error */
         printk("Cannot load bzImage v%d.%02d at least v2.08 is required\n",
            hdr->version >> 8, hdr->version & 0xff);
         return -EINVAL;
